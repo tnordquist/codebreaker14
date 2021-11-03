@@ -3,9 +3,19 @@ plugins {
     id 'androidx.navigation.safeargs'
 }
 
+String getLocalProperty(String name) {
+    Properties properties = new Properties()
+    properties.load(new FileInputStream("$projectDir/../local.properties"))
+    return properties.getProperty(name)
+}
+
+static String quoted(String input) {
+    return "\"$input\""
+}
+
 android {
     compileSdkVersion 30
- //   buildToolsVersion "30.0.3"
+    buildToolsVersion "30.0.3"
 
     defaultConfig {
         applicationId "edu.cnm.deepdive.codebreaker"
@@ -15,6 +25,8 @@ android {
         versionName "1.0"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+
+        buildConfigField 'String', 'BASE_URL', quoted(getLocalProperty('base_url'))
     }
 
     buildTypes {
