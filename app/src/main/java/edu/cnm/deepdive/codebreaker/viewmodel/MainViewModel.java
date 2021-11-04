@@ -30,8 +30,8 @@ public class MainViewModel extends AndroidViewModel {
         repository
             .startGame(pool, length)
             .subscribe(
-                (g) -> game.postValue(g),
-                (t) -> throwable.postValue(t)
+                game::postValue,
+                throwable::postValue
             )
     );
   }
