@@ -63,6 +63,7 @@ dependencies {
     implementation "androidx.navigation:navigation-ui:$navigationVersion"
     implementation 'androidx.lifecycle:lifecycle-livedata-ktx:2.3.1'
     implementation 'androidx.lifecycle:lifecycle-viewmodel-ktx:2.3.1'
+    implementation 'androidx.legacy:legacy-support-v4:1.0.0'
 
     // Lifecycle (LiveData and ViewModel) libraries
     def lifecycleVersion = '2.3.1'
