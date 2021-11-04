@@ -22,6 +22,7 @@ public class PlayFragment extends Fragment {
   public View onCreateView(LayoutInflater inflater, ViewGroup container,
       Bundle savedInstanceState) {
     binding = FragmentPlayBinding.inflate(inflater, container, false);
+
     return binding.getRoot();
   }
 
