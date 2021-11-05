@@ -17,7 +17,8 @@
     app:layout_constraintEnd_toEndOf="parent"
     app:layout_constraintStart_toStartOf="parent"
     app:layout_constraintTop_toTopOf="parent"
-    app:layout_constraintBottom_toTopOf="@id/guess"/>
+    app:layout_constraintBottom_toTopOf="@id/guess"
+    tools:listitem="@layout/item_guess"/>
 
   <EditText
     android:id="@+id/guess"
@@ -25,10 +26,11 @@
     android:layout_height="wrap_content"
     android:inputType="text"
     android:layout_margin="@dimen/half_dynamic_spacing"
+    android:hint="@string/text_of_guess"
     app:layout_constraintBottom_toBottomOf="parent"
     app:layout_constraintStart_toStartOf="parent"
     app:layout_constraintEnd_toStartOf="@id/submit"
-    />
+    tools:ignore="Autofill"/>
 
   <Button
     android:id="@+id/submit"

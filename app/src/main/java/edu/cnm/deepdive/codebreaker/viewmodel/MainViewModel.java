@@ -4,6 +4,7 @@ import android.app.Application;
 import android.util.Log;
 import androidx.annotation.NonNull;
 import androidx.lifecycle.AndroidViewModel;
+import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 import edu.cnm.deepdive.codebreaker.model.Game;
 import edu.cnm.deepdive.codebreaker.service.GameRepository;
@@ -23,9 +24,19 @@ public class MainViewModel extends AndroidViewModel {
     game = new MutableLiveData<>();
     throwable = new MutableLiveData<>();
     pending = new CompositeDisposable();
+    startGame("ABCDEF", 3);
+  }
+
+  public LiveData<Game> getGame() {
+    return game;
+  }
+
+  public LiveData<Throwable> getThrowable() {
+    return throwable;
   }
 
   public void startGame(String pool, int length) {
+    throwable.postValue(null);
     pending.add(
         repository
             .startGame(pool, length)
@@ -35,6 +46,19 @@ public class MainViewModel extends AndroidViewModel {
             )
     );
   }
+
+  public void submitGuess(String text) {
+    throwable.postValue(null);
+    pending.add(
+      repository
+          .submitGuess(game.getValue(), text)
+          .subscribe(
+              game::postValue,
+              throwable::postValue
+          )
+    );
+  }
+
 
   private void postThrowable(Throwable throwable) {
     Log.e(getClass().getSimpleName(), throwable.getMessage(), throwable);
