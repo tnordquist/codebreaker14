@@ -1,7 +1,7 @@
 package edu.cnm.deepdive.codebreaker.service;
 
-import edu.cnm.deepdive.codebreaker.model.Game;
-import edu.cnm.deepdive.codebreaker.model.Guess;
+import edu.cnm.deepdive.codebreaker.model.entity.Game;
+import edu.cnm.deepdive.codebreaker.model.entity.Guess;
 import io.reactivex.Single;
 import io.reactivex.schedulers.Schedulers;
 
@@ -33,7 +33,7 @@ public class GameRepository {
           guess.setText(text);
           return guess;
         })
-        .flatMap((guess) -> proxy.submitGuess(guess, game.getServiceKey()))
+        .flatMap((guess) -> proxy.submitGuess(guess, game.getId()))
         .map((guess) -> {
           game.getGuesses().add(guess);
           game.setSolved(guess.isSolution());

@@ -8,7 +8,6 @@ import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.widget.Toast;
 import androidx.annotation.NonNull;
@@ -18,7 +17,7 @@ import androidx.lifecycle.ViewModelProvider;
 import edu.cnm.deepdive.codebreaker.R;
 import edu.cnm.deepdive.codebreaker.adapter.GuessItemAdapter;
 import edu.cnm.deepdive.codebreaker.databinding.FragmentPlayBinding;
-import edu.cnm.deepdive.codebreaker.model.Game;
+import edu.cnm.deepdive.codebreaker.model.entity.Game;
 import edu.cnm.deepdive.codebreaker.viewmodel.MainViewModel;
 
 public class PlayFragment extends Fragment implements InputFilter {

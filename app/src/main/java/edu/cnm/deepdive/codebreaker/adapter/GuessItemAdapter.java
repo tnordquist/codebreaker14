@@ -4,12 +4,11 @@ import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.ViewGroup;
 import androidx.annotation.NonNull;
-import androidx.recyclerview.widget.RecyclerView;
 import androidx.recyclerview.widget.RecyclerView.Adapter;
 import androidx.recyclerview.widget.RecyclerView.ViewHolder;
 import edu.cnm.deepdive.codebreaker.adapter.GuessItemAdapter.Holder;
 import edu.cnm.deepdive.codebreaker.databinding.ItemGuessBinding;
-import edu.cnm.deepdive.codebreaker.model.Guess;
+import edu.cnm.deepdive.codebreaker.model.entity.Guess;
 import java.util.List;
 
 public class GuessItemAdapter extends Adapter<Holder> {
