@@ -1,6 +1,5 @@
 package edu.cnm.deepdive.codebreaker.service;
 
-import android.util.Log;
 import edu.cnm.deepdive.codebreaker.model.Game;
 import edu.cnm.deepdive.codebreaker.model.Guess;
 import io.reactivex.Single;
@@ -34,7 +33,7 @@ public class GameRepository {
           guess.setText(text);
           return guess;
         })
-        .flatMap((guess) -> proxy.submitGuess(guess, game.getId()))
+        .flatMap((guess) -> proxy.submitGuess(guess, game.getServiceKey()))
         .map((guess) -> {
           game.getGuesses().add(guess);
           game.setSolved(guess.isSolution());

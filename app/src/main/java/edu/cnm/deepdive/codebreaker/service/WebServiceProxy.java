@@ -8,7 +8,6 @@ import io.reactivex.Single;
 import okhttp3.OkHttpClient;
 import okhttp3.logging.HttpLoggingInterceptor;
 import okhttp3.logging.HttpLoggingInterceptor.Level;
-import retrofit2.Call;
 import retrofit2.Retrofit;
 import retrofit2.adapter.rxjava2.RxJava2CallAdapterFactory;
 import retrofit2.converter.gson.GsonConverterFactory;
@@ -22,7 +21,7 @@ public interface WebServiceProxy {
   Single<Game> startGame(@Body Game game);
 
   @POST("codes/{gameId}/guesses")
-  Single<Guess> submitGuess(@Body Guess guess, @Path("gameId") String gameId);
+  Single<Guess> submitGuess(@Body Guess guess, @Path("gameId") long gameId);
 
   static WebServiceProxy getInstance() {
     return InstanceHolder.INSTANCE;
