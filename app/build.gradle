@@ -14,13 +14,13 @@ static String quoted(String input) {
 }
 
 android {
-    compileSdkVersion 30
+    compileSdkVersion 31
 //    buildToolsVersion "30.0.3"
 
     defaultConfig {
         applicationId "edu.cnm.deepdive.codebreaker"
         minSdkVersion 26
-        targetSdkVersion 30
+        targetSdkVersion 31
         versionCode 1
         versionName "1.0"
 
@@ -66,7 +66,7 @@ dependencies {
     implementation 'androidx.legacy:legacy-support-v4:1.0.0'
 
     // Lifecycle (LiveData and ViewModel) libraries
-    def lifecycleVersion = '2.3.1'
+    def lifecycleVersion = '2.4.0'
     implementation "androidx.lifecycle:lifecycle-runtime:$lifecycleVersion"
     implementation "androidx.lifecycle:lifecycle-livedata:$lifecycleVersion"
     implementation "androidx.lifecycle:lifecycle-viewmodel:$lifecycleVersion"
