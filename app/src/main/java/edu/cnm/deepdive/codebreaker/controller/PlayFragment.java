@@ -13,6 +13,7 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
 import edu.cnm.deepdive.codebreaker.R;
 import edu.cnm.deepdive.codebreaker.adapter.GuessItemAdapter;
@@ -55,7 +56,12 @@ public class PlayFragment extends Fragment implements InputFilter {
         Toast.makeText(getContext(), throwable.getMessage(), Toast.LENGTH_LONG).show();
       }
     });
-    viewModel.getGame().observe(getViewLifecycleOwner(), this::update);
+    viewModel.getGame().observe(getViewLifecycleOwner(), new Observer<Game>() {
+      @Override
+      public void onChanged(Game game) {
+        PlayFragment.this.update(game);
+      }
+    });
   }
 
 

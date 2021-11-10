@@ -21,7 +21,7 @@ public interface WebServiceProxy {
   Single<Game> startGame(@Body Game game);
 
   @POST("codes/{gameId}/guesses")
-  Single<Guess> submitGuess(@Body Guess guess, @Path("gameId") long gameId);
+  Single<Guess> submitGuess(@Body Guess guess, @Path("gameId") String gameId);
 
   static WebServiceProxy getInstance() {
     return InstanceHolder.INSTANCE;

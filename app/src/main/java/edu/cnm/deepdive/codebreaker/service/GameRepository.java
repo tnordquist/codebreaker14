@@ -1,16 +1,26 @@
 package edu.cnm.deepdive.codebreaker.service;
 
+import edu.cnm.deepdive.codebreaker.model.dao.GameDao;
+import edu.cnm.deepdive.codebreaker.model.dao.GuessDao;
 import edu.cnm.deepdive.codebreaker.model.entity.Game;
 import edu.cnm.deepdive.codebreaker.model.entity.Guess;
 import io.reactivex.Single;
+import io.reactivex.functions.Function;
 import io.reactivex.schedulers.Schedulers;
+import java.util.List;
+import org.jetbrains.annotations.NotNull;
 
 public class GameRepository {
 
   private final WebServiceProxy proxy;
+  private final GameDao gameDao;
+  private final GuessDao guessDao;
 
   public GameRepository() {
     this.proxy = WebServiceProxy.getInstance();
+    CodebreakerDatabase database = CodebreakerDatabase.getInstance();
+    gameDao = database.getGameDao();
+    guessDao = database.getGuessDao();
   }
 
   public Single<Game> startGame(String pool, int length) {
@@ -21,9 +31,8 @@ public class GameRepository {
           game.setLength(length);
           return game;
         })
-        .flatMap((game) ->
-            proxy.startGame(game)
-                .subscribeOn(Schedulers.io()));
+        .flatMap(proxy::startGame)
+        .subscribeOn(Schedulers.io());
   }
 
   public Single<Game> submitGuess(Game game, String text) {
@@ -33,19 +42,32 @@ public class GameRepository {
           guess.setText(text);
           return guess;
         })
-        .flatMap((guess) -> proxy.submitGuess(guess, game.getId()))
+        .flatMap((guess) -> proxy.submitGuess(guess, game.getServiceKey()))
         .map((guess) -> {
           game.getGuesses().add(guess);
           game.setSolved(guess.isSolution());
           return game;
         })
-        //        .flatMap((g) -> {
-//          if (g.isSolved()) {
-//            // Use DAO to write Game and Guesses to database
-//          }
-//          return g;
-//        })
+        .flatMap(this::insertGameWithGuesses)
         .subscribeOn(Schedulers.io());
 
+  }
+
+  private Single<Game> insertGameWithGuesses(Game game) {
+    return (game.isSolved())
+        ? gameDao
+        .insert(game)
+        .map((id) -> {
+          game.setId(id);
+          for (Guess guess : game.getGuesses()) {
+            guess.setGameId(id);
+          }
+          return game;
+        })
+        .flatMap((g2) -> guessDao
+            .insert(g2.getGuesses())
+            //TODO invoke Guess.setId for all of the guesses.
+            .map(ids -> g2))
+        : Single.just(game);
   }
 }
