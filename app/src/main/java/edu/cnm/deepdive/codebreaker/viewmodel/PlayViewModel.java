@@ -13,14 +13,14 @@ import edu.cnm.deepdive.codebreaker.model.entity.Game;
 import edu.cnm.deepdive.codebreaker.service.GameRepository;
 import io.reactivex.disposables.CompositeDisposable;
 
-public class MainViewModel extends AndroidViewModel implements LifecycleObserver {
+public class PlayViewModel extends AndroidViewModel implements LifecycleObserver {
 
   GameRepository repository;
   private final MutableLiveData<Game> game;
   private final MutableLiveData<Throwable> throwable;
   private final CompositeDisposable pending;
 
-  public MainViewModel(@NonNull Application application) {
+  public PlayViewModel(@NonNull Application application) {
     super(application);
     repository = new GameRepository();
     game = new MutableLiveData<>();
