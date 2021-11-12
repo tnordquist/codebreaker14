@@ -4,7 +4,7 @@ import androidx.room.ColumnInfo;
 import androidx.room.DatabaseView;
 import edu.cnm.deepdive.codebreaker.model.entity.Game;
 
-@DatabaseView()
+@DatabaseView(value = GameSummary.QUERY, viewName = "game_summary")
 public class GameSummary extends Game {
 
   static final String QUERY = "SELECT \n"
@@ -16,9 +16,13 @@ public class GameSummary extends Game {
       + "   INNER JOIN ( \n"
       + "     SELECT \n"
       + "       game_id, \n"
-      + "       COUNT(*) AS guess"
+      + "       COUNT(*) AS guess_count, \n"
+      + "       MIN(created) AS first_guess, \n"
+      + "       MAX(created) AS last_guess \n"
       + "     FROM \n"
-      + "       guess \n";
+      + "       guess "
+      + " ) AS s \n"
+      + "     ON g.game_id = s.game_id";
 
   @ColumnInfo(name = "guess_count")
   private int guessCount;
