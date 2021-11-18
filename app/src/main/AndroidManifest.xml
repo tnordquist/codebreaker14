@@ -1,10 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
-<manifest
-  xmlns:android="http://schemas.android.com/apk/res/android"
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
   xmlns:tools="http://schemas.android.com/tools"
-  package="edu.cnm.deepdive.codebreaker">
-
-  <uses-permission android:name="android.permission.INTERNET"/>
+  package="edu.cnm.deepdive.codebreaker14">
 
   <application
     android:allowBackup="false"
@@ -15,9 +12,11 @@
     android:supportsRtl="true"
     android:theme="@style/Theme.Codebreaker"
     tools:ignore="AllowBackup">
+    <activity android:name=".controller.LoginActivity">
+    </activity>
     <activity
-      android:label="@string/title_activity_main"
       android:exported="true"
+      android:label="@string/title_activity_main"
       android:name=".controller.MainActivity"
       android:theme="@style/Theme.Codebreaker.NoActionBar">
       <intent-filter>
@@ -28,5 +27,6 @@
     </activity>
   </application>
 
+  <uses-permission android:name="android.permission.INTERNET"/>
 
 </manifest>

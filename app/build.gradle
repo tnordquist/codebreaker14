@@ -14,11 +14,11 @@ static String quoted(String input) {
 }
 
 android {
+    //noinspection GroovyAssignabilityCheck
     compileSdkVersion 31
-//    buildToolsVersion "30.0.3"
 
     defaultConfig {
-        applicationId "edu.cnm.deepdive.codebreaker"
+        applicationId "edu.cnm.deepdive.codebreaker14"
         minSdkVersion 26
         targetSdkVersion 31
         versionCode 1

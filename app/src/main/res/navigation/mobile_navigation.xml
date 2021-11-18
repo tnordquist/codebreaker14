@@ -3,23 +3,23 @@
   xmlns:app="http://schemas.android.com/apk/res-auto"
   xmlns:tools="http://schemas.android.com/tools"
   android:id="@+id/mobile_navigation"
-  app:startDestination="@+id/nav_home">
+  app:startDestination="@+id/nav_play">
 
   <fragment
-    android:id="@+id/nav_home"
+    android:id="@+id/nav_play"
     android:label="@string/menu_play"
-    android:name="edu.cnm.deepdive.codebreaker.controller.PlayFragment"
+    android:name="edu.cnm.deepdive.codebreaker14.controller.PlayFragment"
     tools:layout="@layout/fragment_play"/>
 
   <fragment
     android:id="@+id/nav_scores"
     android:label="@string/menu_scores"
-    android:name="edu.cnm.deepdive.codebreaker.controller.ScoresFragment"
+    android:name="edu.cnm.deepdive.codebreaker14.controller.ScoresFragment"
     tools:layout="@layout/fragment_scores"/>
 
   <fragment
     android:id="@+id/nav_slideshow"
     android:label="@string/menu_slideshow"
-    android:name="edu.cnm.deepdive.codebreaker.controller.ui.slideshow.SlideshowFragment"
+    android:name="edu.cnm.deepdive.codebreaker14.controller.ui.slideshow.SlideshowFragment"
     tools:layout="@layout/fragment_slideshow"/>
 </navigation>
