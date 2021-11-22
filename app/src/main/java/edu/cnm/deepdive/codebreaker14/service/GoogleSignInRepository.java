@@ -1,11 +1,18 @@
 package edu.cnm.deepdive.codebreaker14.service;
 
 import android.app.Application;
+import android.content.Intent;
 import android.util.Log;
+import androidx.activity.result.ActivityResult;
+import androidx.activity.result.ActivityResultLauncher;
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
 import com.google.android.gms.auth.api.signin.GoogleSignInClient;
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
+import com.google.android.gms.common.api.ApiException;
+import com.google.android.gms.tasks.Task;
+import edu.cnm.deepdive.codebreaker14.BuildConfig;
+import io.reactivex.Completable;
 import io.reactivex.Single;
 import io.reactivex.SingleEmitter;
 import io.reactivex.schedulers.Schedulers;
@@ -25,7 +32,7 @@ public class GoogleSignInRepository {
         .requestEmail()
         .requestId()
         .requestProfile()
-//        .requestIdToken()
+        .requestIdToken(BuildConfig.CLIENT_ID)
         .build();
     client = GoogleSignIn.getClient(context, options);
   }
@@ -50,6 +57,49 @@ public class GoogleSignInRepository {
         .observeOn(Schedulers.io());
   }
 
+  public Single<String> refreshBearerToken() {
+    return refresh()
+        .map(this::getBearerToken);
+  }
+
+  public void startSignIn(ActivityResultLauncher<Intent> launcher) {
+    launcher.launch(client.getSignInIntent());
+  }
+
+  public Single<GoogleSignInAccount> completeSignIn(ActivityResult result) {
+    return Single
+        .create((SingleEmitter<GoogleSignInAccount> emitter) -> {
+          try {
+            Task<GoogleSignInAccount> task =
+                GoogleSignIn.getSignedInAccountFromIntent(result.getData());
+            GoogleSignInAccount account = task.getResult(ApiException.class);
+            setAccount(account);
+            emitter.onSuccess(account);
+          } catch (ApiException e) {
+            emitter.onError(e);
+          }
+        })
+        .observeOn(Schedulers.io());
+  }
+
+  public Completable signOut() {
+    return Completable
+        .create((emitter) ->
+            client
+                .signOut()
+                .addOnCompleteListener((ignored) -> {
+                  setAccount(null);
+                  emitter.onComplete();
+                })
+                .addOnFailureListener(emitter::onError)
+        )
+        .subscribeOn(Schedulers.io());
+  }
+
+  private String getBearerToken(GoogleSignInAccount account) {
+    return String.format(BEARER_TOKEN_FORMAT, account.getIdToken());
+  }
+
   private void setAccount(GoogleSignInAccount account) {
     this.account = account;
     if (account != null) {
@@ -58,9 +108,6 @@ public class GoogleSignInRepository {
     }
   }
 
-  private String getBearerToken(GoogleSignInAccount account) {
-    return String.format(BEARER_TOKEN_FORMAT, account.getIdToken());
-  }
 
   private static class InstanceHolder {
 
