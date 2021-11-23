@@ -9,8 +9,10 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Spinner;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
@@ -21,15 +23,15 @@ import edu.cnm.deepdive.codebreaker14.databinding.FragmentPlayBinding;
 import edu.cnm.deepdive.codebreaker14.model.entity.Game;
 import edu.cnm.deepdive.codebreaker14.viewmodel.PlayViewModel;
 
-public class PlayFragment extends Fragment implements InputFilter {
-
-  private static final String ILLEGAL_CHARACTERS_FORMAT = "[^%s]+";
+public class PlayFragment extends Fragment {
 
   private PlayViewModel viewModel;
   private FragmentPlayBinding binding;
   private int codeLength;
   private String pool;
   private String illegalCharacters;
+  private Spinner[] spinners;
+  private Game game;
 
   @Override
   public void onCreate(@Nullable @org.jetbrains.annotations.Nullable Bundle savedInstanceState) {
@@ -41,9 +43,15 @@ public class PlayFragment extends Fragment implements InputFilter {
   public View onCreateView(LayoutInflater inflater, ViewGroup container,
       Bundle savedInstanceState) {
     binding = FragmentPlayBinding.inflate(inflater, container, false);
-    binding.submit.setOnClickListener(
-        (v) -> viewModel.submitGuess(binding.guess.getText().toString().trim()));
-    binding.guess.setFilters(new InputFilter[]{this});
+    binding.submit.setOnClickListener((v) -> {
+      StringBuilder builder = new StringBuilder();
+      for (int i = 0; i < codeLength; i++) {
+        String emoji = (String) spinners[i].getSelectedItem();
+        builder.append(emoji);
+      }
+      viewModel.submitGuess(builder.toString());
+    });
+
     return binding.getRoot();
   }
 
@@ -79,7 +87,6 @@ public class PlayFragment extends Fragment implements InputFilter {
     boolean handled;
     if (item.getItemId() == R.id.new_game) {
       handled = true;
-      binding.guess.getText().clear();
       viewModel.startGame();
     } else {
       handled = super.onOptionsItemSelected(item);
@@ -119,6 +126,13 @@ public class PlayFragment extends Fragment implements InputFilter {
     pool = game.getPool();
     illegalCharacters = String.format(ILLEGAL_CHARACTERS_FORMAT, pool);
     checkSubmitConditions(binding.guess.getText().toString().trim().length());
+  }
+
+  private Spinner[] setupSpinners(ConstraintLayout layout, int numSpinners) {
+    Spinner[] spinners = new Spinner[numSpinners];
+    for (int i = 0; i < spinners.length; i++) {
+      Spinner spinner = layoutIn
+    }
   }
 
   private void checkSubmitConditions(int length) {
