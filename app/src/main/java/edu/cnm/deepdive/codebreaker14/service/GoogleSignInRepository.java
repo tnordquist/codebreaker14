@@ -25,8 +25,6 @@ public class GoogleSignInRepository {
 
   private final GoogleSignInClient client;
 
-  private GoogleSignInAccount account;
-
   private GoogleSignInRepository() {
     GoogleSignInOptions options = new GoogleSignInOptions.Builder()
         .requestEmail()
@@ -48,11 +46,11 @@ public class GoogleSignInRepository {
   public Single<GoogleSignInAccount> refresh() {
     return Single
         .create((SingleEmitter<GoogleSignInAccount> emitter) ->
-            client
-                .silentSignIn()
-                .addOnSuccessListener(this::setAccount)
-                .addOnSuccessListener(emitter::onSuccess)
-                .addOnFailureListener(emitter::onError)
+                client
+                    .silentSignIn()
+//                .addOnSuccessListener(this::logAccount)
+                    .addOnSuccessListener(emitter::onSuccess)
+                    .addOnFailureListener(emitter::onError)
         )
         .observeOn(Schedulers.io());
   }
@@ -73,7 +71,7 @@ public class GoogleSignInRepository {
             Task<GoogleSignInAccount> task =
                 GoogleSignIn.getSignedInAccountFromIntent(result.getData());
             GoogleSignInAccount account = task.getResult(ApiException.class);
-            setAccount(account);
+//            logAccount(account);
             emitter.onSuccess(account);
           } catch (ApiException e) {
             emitter.onError(e);
@@ -88,7 +86,7 @@ public class GoogleSignInRepository {
             client
                 .signOut()
                 .addOnSuccessListener((ignored) -> emitter.onComplete())
-                .addOnCompleteListener((ignored) -> setAccount(null))
+//                .addOnCompleteListener((ignored) -> logAccount(null))
                 .addOnFailureListener(emitter::onError)
         )
         .subscribeOn(Schedulers.io());
@@ -98,8 +96,7 @@ public class GoogleSignInRepository {
     return String.format(BEARER_TOKEN_FORMAT, account.getIdToken());
   }
 
-  private void setAccount(GoogleSignInAccount account) {
-    this.account = account;
+  private void logAccount(GoogleSignInAccount account) {
     if (account != null) {
       Log.d(getClass().getSimpleName(),
           (account.getIdToken() != null) ? getBearerToken(account) : "(none)");

@@ -5,6 +5,11 @@
   android:id="@+id/mobile_navigation"
   app:startDestination="@+id/nav_play">
 
+  <action
+    android:id="@+id/open_settings"
+    app:destination="@id/nav_settings"
+    />
+
   <fragment
     android:id="@+id/nav_play"
     android:label="@string/menu_play"
@@ -18,8 +23,7 @@
     tools:layout="@layout/fragment_scores"/>
 
   <fragment
-    android:id="@+id/nav_slideshow"
-    android:label="@string/menu_slideshow"
-    android:name="edu.cnm.deepdive.codebreaker14.controller.ui.slideshow.SlideshowFragment"
-    tools:layout="@layout/fragment_slideshow"/>
+    android:id="@+id/nav_settings"
+    android:label="@string/menu_settings"
+    android:name="edu.cnm.deepdive.codebreaker14.controller.SettingsFragment"/>
 </navigation>
