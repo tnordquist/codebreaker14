@@ -1,27 +1,28 @@
 package edu.cnm.deepdive.codebreaker14.controller;
 
 import android.os.Bundle;
-import android.text.InputFilter;
-import android.text.Spanned;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ArrayAdapter;
 import android.widget.Spinner;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.constraintlayout.widget.ConstraintLayout;
+import androidx.constraintlayout.widget.ConstraintSet;
 import androidx.fragment.app.Fragment;
-import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
 import com.google.android.material.snackbar.Snackbar;
 import edu.cnm.deepdive.codebreaker14.R;
 import edu.cnm.deepdive.codebreaker14.adapter.GuessItemAdapter;
 import edu.cnm.deepdive.codebreaker14.databinding.FragmentPlayBinding;
 import edu.cnm.deepdive.codebreaker14.model.entity.Game;
+import edu.cnm.deepdive.codebreaker14.model.entity.Guess;
 import edu.cnm.deepdive.codebreaker14.viewmodel.PlayViewModel;
+import java.util.List;
 
 public class PlayFragment extends Fragment {
 
@@ -34,14 +35,13 @@ public class PlayFragment extends Fragment {
   private Game game;
 
   @Override
-  public void onCreate(@Nullable @org.jetbrains.annotations.Nullable Bundle savedInstanceState) {
+  public void onCreate(@Nullable Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
     setHasOptionsMenu(true);
   }
 
-  @Override
-  public View onCreateView(LayoutInflater inflater, ViewGroup container,
-      Bundle savedInstanceState) {
+  public View onCreateView(
+      @NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
     binding = FragmentPlayBinding.inflate(inflater, container, false);
     binding.submit.setOnClickListener((v) -> {
       StringBuilder builder = new StringBuilder();
@@ -51,30 +51,19 @@ public class PlayFragment extends Fragment {
       }
       viewModel.submitGuess(builder.toString());
     });
-
+    spinners = setupSpinners(
+        binding.guessContainer, getResources().getInteger(R.integer.code_length_pref_max));
     return binding.getRoot();
   }
 
   @Override
   public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
     super.onViewCreated(view, savedInstanceState);
-    //noinspection ConstantConditions
-    viewModel = new ViewModelProvider(getActivity()).get(PlayViewModel.class);
+    viewModel = new ViewModelProvider(this).get(PlayViewModel.class);
     getLifecycle().addObserver(viewModel);
-    viewModel.getThrowable().observe(getViewLifecycleOwner(), new Observer<Throwable>() {
-      @Override
-      public void onChanged(Throwable throwable) {
-        displayError(throwable);
-      }
-    });
-    viewModel.getGame().observe(getViewLifecycleOwner(), new Observer<Game>() {
-      @Override
-      public void onChanged(Game game) {
-        PlayFragment.this.update(game);
-      }
-    });
+    viewModel.getThrowable().observe(getViewLifecycleOwner(), this::displayError);
+    viewModel.getGame().observe(getViewLifecycleOwner(), this::update);
   }
-
 
   @Override
   public void onCreateOptionsMenu(@NonNull Menu menu, @NonNull MenuInflater inflater) {
@@ -100,52 +89,92 @@ public class PlayFragment extends Fragment {
     binding = null;
   }
 
-  @Override
-  public CharSequence filter(
-      CharSequence source, int start, int end, Spanned dest, int dstart, int dend) {
-    String modifiedSource = source
-        .subSequence(start, end)
-        .toString()
-        .toUpperCase()
-        .replaceAll(illegalCharacters, "");
-    StringBuilder builder = new StringBuilder(dest);
-    builder.replace(dstart, dend, modifiedSource);
-    if (builder.length() > codeLength) {
-      modifiedSource = modifiedSource.substring(0, (builder.length() - codeLength));
-    }
-    int newLength = dest.length() - (dend - dstart) + modifiedSource.length();
-    checkSubmitConditions(newLength);
-    return modifiedSource;
-  }
-
   private void update(Game game) {
-    GuessItemAdapter adapter = new GuessItemAdapter(getContext(), game.getGuesses());
-    binding.guesses.setAdapter(adapter);
-    binding.guessContainer.setVisibility((game.isSolved() ? View.GONE : View.VISIBLE));
+    this.game = game;
     codeLength = game.getLength();
     pool = game.getPool();
-    illegalCharacters = String.format(ILLEGAL_CHARACTERS_FORMAT, pool);
-    checkSubmitConditions(binding.guess.getText().toString().trim().length());
-  }
-
-  private Spinner[] setupSpinners(ConstraintLayout layout, int numSpinners) {
-    Spinner[] spinners = new Spinner[numSpinners];
-    for (int i = 0; i < spinners.length; i++) {
-      Spinner spinner = layoutIn
+    List<Guess> guesses = game.getGuesses();
+    Guess lastGuess = guesses.isEmpty() ? null : guesses.get(guesses.size() - 1);
+    String[] emojis = getUnicodeArray(pool);
+    for (int i = codeLength; i < spinners.length; i++) {
+      spinners[i].setVisibility(View.GONE);
     }
-  }
-
-  private void checkSubmitConditions(int length) {
-    binding.submit.setEnabled(length == codeLength);
+    for (int spinnerIndex = 0; spinnerIndex < codeLength; spinnerIndex++) {
+      spinners[spinnerIndex].setVisibility(View.VISIBLE);
+      ArrayAdapter<String> adapter = new ArrayAdapter<>(getContext(), R.layout.item_emoji, emojis);
+      adapter.setDropDownViewResource(R.layout.item_emoji_pulldown);
+      spinners[spinnerIndex].setAdapter(adapter);
+      if (lastGuess != null) {
+        String[] guessEmojis = getUnicodeArray(lastGuess.getText());
+        String selection = guessEmojis[spinnerIndex];
+        for (int emojiIndex = 0; emojiIndex < emojis.length; emojiIndex++) {
+          if (emojis[emojiIndex].equals(selection)) {
+            spinners[spinnerIndex].setSelection(emojiIndex);
+            break;
+          }
+        }
+      }
+    }
+    if (game.isSolved()) {
+      binding.guessContainer.setVisibility(View.GONE);
+      binding.submit.setVisibility(View.GONE);
+    } else {
+      binding.guessContainer.setVisibility(View.VISIBLE);
+      binding.submit.setVisibility(View.VISIBLE);
+    }
+    GuessItemAdapter adapter = new GuessItemAdapter(getContext(), guesses);
+    binding.guesses.setAdapter(adapter);
+    binding.guesses.scrollToPosition(adapter.getItemCount() - 1);
   }
 
   private void displayError(Throwable throwable) {
-    if(throwable != null) {
+    if (throwable != null) {
       Snackbar snackbar = Snackbar.make(binding.getRoot(),
           getString(R.string.play_error_message, throwable.getMessage()),
           Snackbar.LENGTH_INDEFINITE);
       snackbar.setAction(R.string.error_dismiss, (v) -> snackbar.dismiss());
+      snackbar.show();
     }
   }
+
+  private Spinner[] setupSpinners(ConstraintLayout layout, int numSpinners) {
+    Spinner[] spinners = new Spinner[numSpinners];
+    LayoutInflater layoutInflater = getLayoutInflater();
+    for (int i = 0; i < spinners.length; i++) {
+      Spinner spinner = (Spinner) layoutInflater.inflate(R.layout.spinner_emoji, layout, false);
+      layout.addView(spinner);
+      spinner.setId(View.generateViewId());
+      spinners[i] = spinner;
+    }
+    int layoutId = layout.getId();
+    ConstraintSet constraints = new ConstraintSet();
+    constraints.clone(layout);
+    for (int i = 0; i < spinners.length; i++) {
+      Spinner spinner = spinners[i];
+      int spinnerId = spinner.getId();
+      constraints.connect(
+          spinnerId, ConstraintSet.START,
+          (i > 0) ? spinners[i - 1].getId() : layoutId,
+          (i > 0) ? ConstraintSet.END : ConstraintSet.START
+      );
+      constraints.connect(
+          spinnerId, ConstraintSet.END,
+          (i < spinners.length - 1) ? spinners[i + 1].getId() : layoutId,
+          (i < spinners.length - 1) ? ConstraintSet.START : ConstraintSet.END
+      );
+      constraints.connect(spinnerId, ConstraintSet.TOP, layoutId, ConstraintSet.TOP);
+      constraints.connect(spinnerId, ConstraintSet.BOTTOM, layoutId, ConstraintSet.BOTTOM);
+    }
+    constraints.applyTo(layout);
+    return spinners;
+  }
+
+  private String[] getUnicodeArray(String source) {
+    return source
+        .codePoints()
+        .mapToObj((codePoint) -> new String(new int[]{codePoint}, 0, 1))
+        .toArray(String[]::new);
+  }
+
 
 }
