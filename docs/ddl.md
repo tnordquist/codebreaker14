@@ -5,6 +5,7 @@ menu: DDL
 order: 50
 ---
 
+```sqlite
 CREATE TABLE IF NOT EXISTS `game`
 (
 `game_id`     INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
@@ -53,4 +54,6 @@ MIN(created) AS first_guess,
 MAX(created) AS last_guess
 FROM guess) AS s
 ON g.game_id = s.game_id;
+```
 
+[`ddl.sql`](sql/ddl.sql)
