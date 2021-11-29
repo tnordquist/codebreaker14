@@ -5,8 +5,10 @@ import android.media.audiofx.BassBoost.Settings;
 import android.util.Log;
 import androidx.annotation.NonNull;
 import androidx.lifecycle.AndroidViewModel;
+import androidx.lifecycle.DefaultLifecycleObserver;
 import androidx.lifecycle.Lifecycle.Event;
 import androidx.lifecycle.LifecycleObserver;
+import androidx.lifecycle.LifecycleOwner;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.OnLifecycleEvent;
@@ -16,8 +18,10 @@ import edu.cnm.deepdive.codebreaker14.model.entity.Guess;
 import edu.cnm.deepdive.codebreaker14.service.GameRepository;
 import edu.cnm.deepdive.codebreaker14.service.SettingsRepository;
 import io.reactivex.disposables.CompositeDisposable;
+import org.jetbrains.annotations.NotNull;
 
-public class PlayViewModel extends AndroidViewModel implements LifecycleObserver {
+public class PlayViewModel extends AndroidViewModel implements LifecycleObserver,
+    DefaultLifecycleObserver {
 
   private final GameRepository gameRepository;
   private final SettingsRepository settingsRepository;
@@ -109,8 +113,9 @@ public class PlayViewModel extends AndroidViewModel implements LifecycleObserver
     );
   }
 
-  @OnLifecycleEvent(Event.ON_STOP)
-  private void clearPending() {
+  @Override
+  public void onStop(@NonNull LifecycleOwner owner) {
+    DefaultLifecycleObserver.super.onStop(owner);
     pending.clear();
   }
 
