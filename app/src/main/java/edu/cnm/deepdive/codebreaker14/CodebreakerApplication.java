@@ -13,8 +13,8 @@ public class CodebreakerApplication extends Application {
   public void onCreate() {
     super.onCreate();
     Stetho.initializeWithDefaults(this);
-    GoogleSignInRepository.setContext(this);
     CodebreakerDatabase.setContext(this);
+    GoogleSignInRepository.setContext(this);
     CodebreakerDatabase
         .getInstance()
         .getGameDao()

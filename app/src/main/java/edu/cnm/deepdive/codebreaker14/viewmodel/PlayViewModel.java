@@ -1,48 +1,50 @@
 package edu.cnm.deepdive.codebreaker14.viewmodel;
 
 import android.app.Application;
-import android.media.audiofx.BassBoost.Settings;
+import android.content.SharedPreferences;
+import android.content.res.Resources;
 import android.util.Log;
 import androidx.annotation.NonNull;
 import androidx.lifecycle.AndroidViewModel;
 import androidx.lifecycle.DefaultLifecycleObserver;
-import androidx.lifecycle.Lifecycle.Event;
-import androidx.lifecycle.LifecycleObserver;
 import androidx.lifecycle.LifecycleOwner;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
-import androidx.lifecycle.OnLifecycleEvent;
+import androidx.preference.PreferenceManager;
 import edu.cnm.deepdive.codebreaker14.R;
 import edu.cnm.deepdive.codebreaker14.model.entity.Game;
 import edu.cnm.deepdive.codebreaker14.model.entity.Guess;
 import edu.cnm.deepdive.codebreaker14.service.GameRepository;
-import edu.cnm.deepdive.codebreaker14.service.SettingsRepository;
 import io.reactivex.disposables.CompositeDisposable;
-import org.jetbrains.annotations.NotNull;
 
-public class PlayViewModel extends AndroidViewModel implements LifecycleObserver,
-    DefaultLifecycleObserver {
+public class PlayViewModel extends AndroidViewModel implements DefaultLifecycleObserver {
 
   private final GameRepository gameRepository;
-  private final SettingsRepository settingsRepository;
   private final MutableLiveData<Game> game;
   private final MutableLiveData<Throwable> throwable;
   private final CompositeDisposable pending;
-
-  private int codeLength;
-  private int poolSize;
-  private String basePool;
+  private final SharedPreferences preferences;
+  private final String codeLengthPrefKey;
+  private final String poolSizePrefKey;
+  private final int codeLengthPrefDefault;
+  private final int poolSizePrefDefault;
+  private final String basePool;
 
   public PlayViewModel(@NonNull Application application) {
     super(application);
     gameRepository = new GameRepository();
-    settingsRepository = new SettingsRepository(application);
     game = new MutableLiveData<>();
     throwable = new MutableLiveData<>();
     pending = new CompositeDisposable();
     String[] emojis = application.getResources().getStringArray(R.array.emojis);
     basePool = String.join("", emojis);
-    subscribeToSettings();
+    preferences = PreferenceManager.getDefaultSharedPreferences(application);
+    Resources resources = application.getResources();
+    codeLengthPrefKey = resources.getString(R.string.code_length_pref_key);
+    poolSizePrefKey = resources.getString(R.string.pool_size_pref_key);
+    codeLengthPrefDefault = resources.getInteger(R.integer.code_length_pref_default);
+    poolSizePrefDefault = resources.getInteger(R.integer.pool_size_pref_default);
+    startGame();
   }
 
   public LiveData<Game> getGame() {
@@ -54,68 +56,44 @@ public class PlayViewModel extends AndroidViewModel implements LifecycleObserver
   }
 
   public void startGame() {
-    if (codeLength > 0 && poolSize > 0) {
-      throwable.postValue(null);
-      int[] poolCodePoints = basePool
-          .codePoints()
-          .limit(poolSize)
-          .toArray();
-      Game game = new Game();
-      game.setPool(new String(poolCodePoints, 0, poolCodePoints.length));
-      game.setLength(codeLength);
-      pending.add(
-          gameRepository
-              .save(game)
-              .subscribe(
-                  this.game::postValue,
-                  this::postThrowable
-              )
-      );
-    }
+    throwable.postValue(null);
+    int codeLength = preferences.getInt(codeLengthPrefKey, codeLengthPrefDefault);
+    int poolSize = preferences.getInt(poolSizePrefKey, poolSizePrefDefault);
+    int[] poolCodePoints = basePool
+            .codePoints()
+            .limit(poolSize)
+            .toArray();
+    Game game = new Game();
+    game.setPool(new String(poolCodePoints, 0, poolCodePoints.length));
+    game.setLength(codeLength);
+    pending.add(
+            gameRepository
+                    .save(game)
+                    .subscribe(
+                            this.game::postValue,
+                            this::postThrowable
+                    )
+    );
   }
 
   public void submitGuess(String text) {
     throwable.postValue(null);
     Guess guess = new Guess();
     guess.setText(text);
+    //noinspection ConstantConditions
     pending.add(
-        gameRepository
-            .save(game.getValue(), guess)
-            .subscribe(
-                game::postValue,
-                this::postThrowable
-            )
-    );
-  }
-
-  private void subscribeToSettings() {
-    pending.add(
-        settingsRepository
-            .getCodeLengthPreferences()
-            .subscribe(
-                (codeLength) -> {
-                  this.codeLength = codeLength;
-                  startGame();
-                },
-                this::postThrowable
-            )
-    );
-    pending.add(
-        settingsRepository
-            .getCodeLengthPreferences()
-            .subscribe(
-                (poolSize) -> {
-                  this.poolSize = poolSize;
-                  startGame();
-                },
-                this::postThrowable
-            )
+            gameRepository
+                    .save(game.getValue(), guess)
+                    .subscribe(
+                            game::postValue,
+                            this::postThrowable
+                    )
     );
   }
 
   @Override
-  public void onStop(@NonNull LifecycleOwner owner) {
-    DefaultLifecycleObserver.super.onStop(owner);
+  public void onDestroy(@NonNull LifecycleOwner owner) {
+    DefaultLifecycleObserver.super.onDestroy(owner);
     pending.clear();
   }
 
